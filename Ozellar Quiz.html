@@ -1,0 +1,1038 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Online Quiz Test</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header-logo {
+            max-width: 150px;
+            max-height: 80px;
+            margin-bottom: 15px;
+            background: white;
+            padding: 10px;
+            border-radius: 8px;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .welcome-screen, .test-screen, .result-screen, .admin-screen {
+            padding: 40px;
+        }
+
+        .welcome-screen {
+            text-align: center;
+        }
+
+        .welcome-screen h2 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 2em;
+        }
+
+        .instructions {
+            text-align: left;
+            max-width: 600px;
+            margin: 30px auto;
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 10px;
+            border-left: 5px solid #667eea;
+        }
+
+        .instructions li {
+            margin: 10px 0;
+            color: #555;
+        }
+
+        .student-info {
+            max-width: 400px;
+            margin: 30px auto;
+        }
+
+        .student-info input {
+            width: 100%;
+            padding: 15px;
+            margin: 10px 0;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 1em;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            font-size: 1.1em;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+
+        .btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+
+        .test-container {
+            display: flex;
+            gap: 30px;
+        }
+
+        .questions-section {
+            flex: 3;
+        }
+
+        .sidebar {
+            flex: 1;
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            position: sticky;
+            top: 20px;
+            height: fit-content;
+        }
+
+        .timer-box {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            text-align: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .timer {
+            font-size: 2em;
+            color: #667eea;
+            font-weight: bold;
+        }
+
+        .question-timer {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            text-align: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            border: 2px solid #ff9800;
+        }
+
+        .question-timer-value {
+            font-size: 1.8em;
+            color: #ff9800;
+            font-weight: bold;
+        }
+
+        .question-timer-value.warning {
+            color: #f44336;
+            animation: pulse 1s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .time-info {
+            font-size: 0.9em;
+            color: #666;
+            margin: 5px 0;
+        }
+
+        .question-card {
+            background: white;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            padding: 25px;
+            margin-bottom: 20px;
+            position: relative;
+        }
+
+        .skipped-badge {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: #ff9800;
+            color: white;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.85em;
+            font-weight: bold;
+        }
+
+        .question-number {
+            color: #667eea;
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+
+        .question-text {
+            font-size: 1.1em;
+            color: #333;
+            margin-bottom: 20px;
+            line-height: 1.6;
+        }
+
+        .options {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .option {
+            padding: 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .option:hover {
+            border-color: #667eea;
+            background: #f8f9ff;
+        }
+
+        .option.selected {
+            border-color: #667eea;
+            background: #e8eaff;
+        }
+
+        .option input[type="radio"] {
+            margin-right: 10px;
+        }
+
+        .navigation {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 30px;
+        }
+
+        .result-screen {
+            text-align: center;
+        }
+
+        .score-display {
+            font-size: 4em;
+            color: #667eea;
+            margin: 30px 0;
+        }
+
+        .result-details {
+            background: #f8f9fa;
+            padding: 30px;
+            border-radius: 10px;
+            max-width: 500px;
+            margin: 30px auto;
+        }
+
+        .result-details p {
+            margin: 15px 0;
+            font-size: 1.2em;
+            color: #555;
+        }
+
+        .admin-login {
+            max-width: 400px;
+            margin: 0 auto;
+        }
+
+        .admin-login input {
+            width: 100%;
+            padding: 15px;
+            margin: 10px 0;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+        }
+
+        .results-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        .results-table th, .results-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .results-table th {
+            background: #667eea;
+            color: white;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .admin-link {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: rgba(0,0,0,0.7);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 20px;
+            text-decoration: none;
+            font-size: 0.9em;
+        }
+
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #ff9800;
+            color: white;
+            padding: 15px 25px;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            z-index: 1000;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(400px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <!-- Company Logo - Replace the src with your logo URL or path -->
+            <img id="companyLogo" class="header-logo" src="https://via.placeholder.com/150x80/ffffff/667eea?text=Your+Logo" alt="Company Logo">
+            <h1>📝 Online Quiz Test</h1>
+            <p>Test Your Knowledge</p>
+        </div>
+
+        <!-- Welcome Screen -->
+        <div id="welcomeScreen" class="welcome-screen">
+            <h2>Welcome to the Quiz Test!</h2>
+            <div class="instructions">
+                <h3>📋 Instructions:</h3>
+                <ul>
+                    <li>Total questions: 50 (randomly selected from 70)</li>
+                    <li>Total time limit: 60 minutes</li>
+                    <li><strong>⏱️ Each question has 1 minute timer</strong></li>
+                    <li><strong>⚠️ Unanswered questions will auto-skip after 1 minute</strong></li>
+                    <li><strong>🔒 Skipped questions cannot be accessed via "Previous" button</strong></li>
+                    <li><strong>Skipped questions will appear at the end for review</strong></li>
+                    <li>Each question has 4 options</li>
+                    <li>Select one answer per question</li>
+                    <li>You can navigate between non-skipped questions</li>
+                    <li>Submit when completed or time runs out</li>
+                </ul>
+            </div>
+            <div class="student-info">
+                <input type="text" id="studentName" placeholder="Enter your name" required>
+                <input type="email" id="studentEmail" placeholder="Enter your email" required>
+                <br><br>
+                <button class="btn" onclick="startTest()">Start Test</button>
+            </div>
+        </div>
+
+        <!-- Test Screen -->
+        <div id="testScreen" class="test-screen hidden">
+            <div class="test-container">
+                <div class="questions-section">
+                    <div id="questionCard" class="question-card"></div>
+                    <div class="navigation">
+                        <button class="btn" onclick="previousQuestion()" id="prevBtn">← Previous</button>
+                        <button class="btn" onclick="nextQuestion()" id="nextBtn">Next →</button>
+                        <button class="btn" onclick="submitTest()" id="submitBtn" style="background: #28a745;">Submit Test</button>
+                    </div>
+                </div>
+                <div class="sidebar">
+                    <div class="question-timer">
+                        <h4>⏱️ Question Timer</h4>
+                        <div class="question-timer-value" id="questionTimer">01:00</div>
+                        <p style="font-size: 0.9em; color: #666; margin-top: 5px;">Auto-skip after 1 min</p>
+                    </div>
+                    <div class="timer-box">
+                        <h3>⏱️ Total Time</h3>
+                        <div class="timer" id="timer">60:00</div>
+                    </div>
+                    <div class="timer-box">
+                        <h4>Test Information</h4>
+                        <p class="time-info">Start: <span id="startTime"></span></p>
+                        <p class="time-info">End: <span id="endTime"></span></p>
+                        <p class="time-info">Question: <span id="currentQ">1</span> / 50</p>
+                        <p class="time-info" style="color: #ff9800;">Skipped: <span id="skippedCount">0</span></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Result Screen -->
+        <div id="resultScreen" class="result-screen hidden">
+            <h2>🎉 Test Completed!</h2>
+            <div style="margin: 40px 0;">
+                <svg width="120" height="120" viewBox="0 0 120 120" style="margin: 0 auto; display: block;">
+                    <circle cx="60" cy="60" r="50" fill="#4CAF50" />
+                    <path d="M40 60 L55 75 L80 45" stroke="white" stroke-width="8" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+            </div>
+            <div class="result-details">
+                <p><strong>Name:</strong> <span id="resultName"></span></p>
+                <p><strong>Email:</strong> <span id="resultEmail"></span></p>
+                <p><strong>Total Questions:</strong> 50</p>
+                <p><strong>Start Time:</strong> <span id="resultStartTime"></span></p>
+                <p><strong>End Time:</strong> <span id="resultEndTime"></span></p>
+            </div>
+            <p style="margin-top: 30px; color: #666; font-size: 1.1em;">
+                Your test has been submitted successfully!<br>
+                Results will be reviewed by the administrator.
+            </p>
+        </div>
+
+        <!-- Admin Screen -->
+        <div id="adminScreen" class="admin-screen hidden">
+            <div id="adminLogin" class="admin-login">
+                <h2>Admin Login</h2>
+                <input type="password" id="adminPassword" placeholder="Enter admin password">
+                <br><br>
+                <button class="btn" onclick="adminLogin()">Login</button>
+            </div>
+            <div id="adminPanel" class="hidden">
+                <h2>Test Results Dashboard</h2>
+                
+                <!-- Logo Settings -->
+                <div style="background: #f8f9fa; padding: 20px; border-radius: 10px; margin-bottom: 20px;">
+                    <h3>Company Logo Settings</h3>
+                    <p style="color: #666; margin: 10px 0;">Enter your logo URL or upload an image:</p>
+                    <input type="text" id="logoUrl" placeholder="Enter logo URL (e.g., https://yoursite.com/logo.png)" 
+                           style="width: 70%; padding: 10px; border: 2px solid #ddd; border-radius: 5px;">
+                    <button class="btn" onclick="updateLogo()" style="padding: 10px 20px;">Update Logo</button>
+                    <p style="color: #999; font-size: 0.9em; margin-top: 10px;">
+                        Or upload image: <input type="file" id="logoFile" accept="image/*" onchange="uploadLogo()" style="margin-left: 10px;">
+                    </p>
+                </div>
+                
+                <p style="color: #666; margin-bottom: 20px;">Total Tests Taken: <strong id="totalTests">0</strong></p>
+                <table class="results-table">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Email</th>
+                            <th>Score</th>
+                            <th>Correct</th>
+                            <th>Wrong</th>
+                            <th>Date</th>
+                            <th>Start Time</th>
+                        </tr>
+                    </thead>
+                    <tbody id="resultsTableBody"></tbody>
+                </table>
+                <br>
+                <button class="btn" onclick="location.reload()">Back to Test</button>
+                <button class="btn" onclick="clearResults()" style="background: #dc3545; margin-left: 10px;">Clear All Results</button>
+            </div>
+        </div>
+    </div>
+
+    <a href="#" class="admin-link" onclick="showAdmin(); return false;">Admin Panel</a>
+
+    <script>
+        // Question Bank (70 questions)
+        const questionBank = [
+            {q: "What is the capital of France?", options: ["London", "Berlin", "Paris", "Madrid"], answer: 2},
+            {q: "Which planet is known as the Red Planet?", options: ["Venus", "Mars", "Jupiter", "Saturn"], answer: 1},
+            {q: "What is 2 + 2?", options: ["3", "4", "5", "6"], answer: 1},
+            {q: "Who painted the Mona Lisa?", options: ["Van Gogh", "Picasso", "Da Vinci", "Rembrandt"], answer: 2},
+            {q: "What is the largest ocean on Earth?", options: ["Atlantic", "Indian", "Arctic", "Pacific"], answer: 3},
+            {q: "In which year did World War II end?", options: ["1943", "1944", "1945", "1946"], answer: 2},
+            {q: "What is the chemical symbol for gold?", options: ["Go", "Gd", "Au", "Ag"], answer: 2},
+            {q: "How many continents are there?", options: ["5", "6", "7", "8"], answer: 2},
+            {q: "What is the smallest prime number?", options: ["0", "1", "2", "3"], answer: 2},
+            {q: "Who wrote 'Romeo and Juliet'?", options: ["Dickens", "Shakespeare", "Hemingway", "Tolstoy"], answer: 1},
+            {q: "What is the speed of light?", options: ["300,000 km/s", "150,000 km/s", "450,000 km/s", "200,000 km/s"], answer: 0},
+            {q: "Which element has atomic number 1?", options: ["Helium", "Hydrogen", "Lithium", "Carbon"], answer: 1},
+            {q: "What is the largest mammal?", options: ["Elephant", "Blue Whale", "Giraffe", "Polar Bear"], answer: 1},
+            {q: "In which country is the Great Wall located?", options: ["Japan", "India", "China", "Mongolia"], answer: 2},
+            {q: "What is the square root of 144?", options: ["10", "11", "12", "13"], answer: 2},
+            {q: "Who developed the theory of relativity?", options: ["Newton", "Einstein", "Galileo", "Hawking"], answer: 1},
+            {q: "What is the capital of Japan?", options: ["Seoul", "Beijing", "Tokyo", "Bangkok"], answer: 2},
+            {q: "How many bones are in the human body?", options: ["186", "206", "226", "246"], answer: 1},
+            {q: "What is the main gas in Earth's atmosphere?", options: ["Oxygen", "Carbon Dioxide", "Nitrogen", "Hydrogen"], answer: 2},
+            {q: "Which is the longest river in the world?", options: ["Amazon", "Nile", "Yangtze", "Mississippi"], answer: 1},
+            {q: "What year did the Titanic sink?", options: ["1910", "1911", "1912", "1913"], answer: 2},
+            {q: "What is the hardest natural substance?", options: ["Gold", "Iron", "Diamond", "Platinum"], answer: 2},
+            {q: "Who invented the telephone?", options: ["Edison", "Bell", "Tesla", "Marconi"], answer: 1},
+            {q: "What is the currency of the UK?", options: ["Euro", "Dollar", "Pound", "Franc"], answer: 2},
+            {q: "How many players in a soccer team?", options: ["9", "10", "11", "12"], answer: 2},
+            {q: "What is H2O?", options: ["Oxygen", "Hydrogen", "Water", "Carbon"], answer: 2},
+            {q: "Which country has the largest population?", options: ["India", "USA", "China", "Russia"], answer: 2},
+            {q: "What is the boiling point of water?", options: ["90°C", "100°C", "110°C", "120°C"], answer: 1},
+            {q: "Who was the first man on the moon?", options: ["Aldrin", "Armstrong", "Collins", "Shepard"], answer: 1},
+            {q: "What is the smallest country in the world?", options: ["Monaco", "Vatican City", "Malta", "Liechtenstein"], answer: 1},
+            {q: "How many sides does a hexagon have?", options: ["5", "6", "7", "8"], answer: 1},
+            {q: "What is the largest planet in our solar system?", options: ["Saturn", "Jupiter", "Uranus", "Neptune"], answer: 1},
+            {q: "In which year did India gain independence?", options: ["1945", "1946", "1947", "1948"], answer: 2},
+            {q: "What is the capital of Australia?", options: ["Sydney", "Melbourne", "Canberra", "Perth"], answer: 2},
+            {q: "Who painted 'The Starry Night'?", options: ["Monet", "Van Gogh", "Renoir", "Cezanne"], answer: 1},
+            {q: "What is the freezing point of water?", options: ["-5°C", "0°C", "5°C", "10°C"], answer: 1},
+            {q: "How many hours are in a day?", options: ["20", "22", "24", "26"], answer: 2},
+            {q: "What is the largest desert in the world?", options: ["Sahara", "Arabian", "Gobi", "Antarctic"], answer: 3},
+            {q: "Who wrote '1984'?", options: ["Huxley", "Orwell", "Bradbury", "Vonnegut"], answer: 1},
+            {q: "What is the tallest mountain in the world?", options: ["K2", "Kangchenjunga", "Everest", "Lhotse"], answer: 2},
+            {q: "How many strings does a standard guitar have?", options: ["4", "5", "6", "7"], answer: 2},
+            {q: "What is the main ingredient in bread?", options: ["Rice", "Wheat", "Corn", "Barley"], answer: 1},
+            {q: "Which organ pumps blood?", options: ["Liver", "Lungs", "Heart", "Kidney"], answer: 2},
+            {q: "What is the capital of Canada?", options: ["Toronto", "Montreal", "Ottawa", "Vancouver"], answer: 2},
+            {q: "How many legs does a spider have?", options: ["6", "8", "10", "12"], answer: 1},
+            {q: "What is the chemical formula for salt?", options: ["NaCl", "KCl", "CaCl2", "MgCl2"], answer: 0},
+            {q: "Who discovered penicillin?", options: ["Pasteur", "Fleming", "Curie", "Koch"], answer: 1},
+            {q: "What is the fastest land animal?", options: ["Lion", "Cheetah", "Leopard", "Tiger"], answer: 1},
+            {q: "How many minutes in an hour?", options: ["50", "55", "60", "65"], answer: 2},
+            {q: "What is the color of emerald?", options: ["Blue", "Red", "Green", "Yellow"], answer: 2},
+            {q: "Which is the smallest continent?", options: ["Europe", "Australia", "Antarctica", "South America"], answer: 1},
+            {q: "What is 10 x 10?", options: ["90", "100", "110", "120"], answer: 1},
+            {q: "Who is known as the Father of Computers?", options: ["Turing", "Babbage", "Lovelace", "Gates"], answer: 1},
+            {q: "What is the national animal of India?", options: ["Lion", "Elephant", "Tiger", "Peacock"], answer: 2},
+            {q: "How many days in a leap year?", options: ["364", "365", "366", "367"], answer: 2},
+            {q: "What is the largest continent?", options: ["Africa", "Asia", "Europe", "America"], answer: 1},
+            {q: "Who invented the light bulb?", options: ["Tesla", "Edison", "Franklin", "Bell"], answer: 1},
+            {q: "What is the capital of Italy?", options: ["Milan", "Venice", "Rome", "Florence"], answer: 2},
+            {q: "How many teeth does an adult human have?", options: ["28", "30", "32", "34"], answer: 2},
+            {q: "What is the largest bird?", options: ["Eagle", "Ostrich", "Albatross", "Condor"], answer: 1},
+            {q: "In which country is the Eiffel Tower?", options: ["Italy", "Spain", "France", "Germany"], answer: 2},
+            {q: "What is 50% of 200?", options: ["50", "75", "100", "150"], answer: 2},
+            {q: "Who was the first President of USA?", options: ["Jefferson", "Washington", "Adams", "Lincoln"], answer: 1},
+            {q: "What is the study of stars called?", options: ["Biology", "Geology", "Astronomy", "Physics"], answer: 2},
+            {q: "How many colors in a rainbow?", options: ["5", "6", "7", "8"], answer: 2},
+            {q: "What is the capital of Spain?", options: ["Barcelona", "Madrid", "Seville", "Valencia"], answer: 1},
+            {q: "Which animal is known as the King of the Jungle?", options: ["Tiger", "Elephant", "Lion", "Bear"], answer: 2},
+            {q: "What is the square of 9?", options: ["72", "81", "90", "99"], answer: 1},
+            {q: "Who wrote 'Harry Potter'?", options: ["Tolkien", "Rowling", "Martin", "Lewis"], answer: 1},
+            {q: "What is the main source of energy for Earth?", options: ["Moon", "Sun", "Stars", "Wind"], answer: 1}
+        ];
+
+        let selectedQuestions = [];
+        let currentQuestionIndex = 0;
+        let userAnswers = [];
+        let studentName = '';
+        let studentEmail = '';
+        let startTime = null;
+        let endTime = null;
+        let timerInterval = null;
+        let questionTimerInterval = null;
+        let remainingSeconds = 3600; // 60 minutes
+        let questionRemainingSeconds = 60; // 1 minute per question
+        let skippedQuestions = [];
+        let visitedQuestions = new Set();
+
+        const ADMIN_PASSWORD = 'admin123'; // Change this password
+
+        function shuffleArray(array) {
+            const shuffled = [...array];
+            for (let i = shuffled.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+            }
+            return shuffled;
+        }
+
+        function startTest() {
+            const name = document.getElementById('studentName').value.trim();
+            const email = document.getElementById('studentEmail').value.trim();
+            
+            if (!name || !email) {
+                alert('Please enter your name and email!');
+                return;
+            }
+
+            studentName = name;
+            studentEmail = email;
+
+            // Select random 50 questions
+            selectedQuestions = shuffleArray(questionBank).slice(0, 50);
+            userAnswers = new Array(50).fill(null);
+            skippedQuestions = [];
+            visitedQuestions = new Set();
+            currentQuestionIndex = 0;
+
+            // Set start time
+            startTime = new Date();
+            document.getElementById('startTime').textContent = startTime.toLocaleTimeString();
+            
+            // Calculate end time (60 minutes later)
+            const endTimeCalc = new Date(startTime.getTime() + 60 * 60000);
+            document.getElementById('endTime').textContent = endTimeCalc.toLocaleTimeString();
+
+            // Show test screen
+            document.getElementById('welcomeScreen').classList.add('hidden');
+            document.getElementById('testScreen').classList.remove('hidden');
+
+            // Load first question
+            loadQuestion();
+            
+            // Start timers AFTER loading question
+            startTimer();
+            startQuestionTimer();
+        }
+
+        function startTimer() {
+            timerInterval = setInterval(() => {
+                remainingSeconds--;
+                
+                const minutes = Math.floor(remainingSeconds / 60);
+                const seconds = remainingSeconds % 60;
+                
+                document.getElementById('timer').textContent = 
+                    `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+
+                if (remainingSeconds <= 0) {
+                    clearInterval(timerInterval);
+                    clearInterval(questionTimerInterval);
+                    submitTest();
+                }
+            }, 1000);
+        }
+
+        function startQuestionTimer() {
+            questionRemainingSeconds = 60; // Reset to 1 minute
+            updateQuestionTimerDisplay();
+            
+            // Clear any existing timer first
+            if (questionTimerInterval) {
+                clearInterval(questionTimerInterval);
+            }
+            
+            questionTimerInterval = setInterval(() => {
+                questionRemainingSeconds--;
+                updateQuestionTimerDisplay();
+
+                // Auto-skip when timer reaches 0
+                if (questionRemainingSeconds <= 0) {
+                    clearInterval(questionTimerInterval);
+                    questionTimerInterval = null;
+                    autoSkipQuestion();
+                }
+            }, 1000);
+        }
+
+        function updateQuestionTimerDisplay() {
+            const minutes = Math.floor(questionRemainingSeconds / 60);
+            const seconds = questionRemainingSeconds % 60;
+            const timerElement = document.getElementById('questionTimer');
+            
+            timerElement.textContent = 
+                `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+            
+            // Add warning animation when less than 10 seconds
+            if (questionRemainingSeconds <= 10) {
+                timerElement.classList.add('warning');
+            } else {
+                timerElement.classList.remove('warning');
+            }
+        }
+
+        function autoSkipQuestion() {
+            console.log('Auto-skipping question:', currentQuestionIndex + 1);
+            
+            // Mark current question as skipped if not answered and not already in skipped array
+            if (userAnswers[currentQuestionIndex] === null) {
+                const alreadySkipped = skippedQuestions.some(sq => sq.originalIndex === currentQuestionIndex);
+                
+                if (!alreadySkipped) {
+                    const skippedQuestion = {
+                        question: selectedQuestions[currentQuestionIndex],
+                        originalIndex: currentQuestionIndex
+                    };
+                    skippedQuestions.push(skippedQuestion);
+                    showNotification(`⚠️ Question ${currentQuestionIndex + 1} skipped! It will appear at the end.`);
+                }
+            }
+            
+            updateSkippedCount();
+            
+            // Move to next non-skipped question
+            if (currentQuestionIndex < 49) {
+                // Find the next non-skipped question
+                let nextIndex = currentQuestionIndex + 1;
+                
+                // Skip over any questions that are already in the skipped list
+                while (nextIndex <= 49 && isQuestionSkipped(nextIndex)) {
+                    nextIndex++;
+                }
+                
+                // If we found a valid next question (within bounds), go to it
+                if (nextIndex <= 49) {
+                    currentQuestionIndex = nextIndex;
+                    loadQuestion();
+                    startQuestionTimer(); // Start new timer for next question
+                } else {
+                    // No more non-skipped questions, move to skipped questions
+                    moveToSkippedQuestions();
+                }
+            } else {
+                // At question 50, check for skipped questions
+                if (skippedQuestions.length > 0) {
+                    moveToSkippedQuestions();
+                } else {
+                    // No skipped questions, submit test
+                    submitTest();
+                }
+            }
+        }
+
+        function showNotification(message) {
+            // Remove any existing notification
+            const existing = document.querySelector('.notification');
+            if (existing) {
+                existing.remove();
+            }
+
+            // Create new notification
+            const notification = document.createElement('div');
+            notification.className = 'notification';
+            notification.textContent = message;
+            document.body.appendChild(notification);
+
+            // Auto-remove after 3 seconds
+            setTimeout(() => {
+                notification.remove();
+            }, 3000);
+        }
+
+        function moveToSkippedQuestions() {
+            if (skippedQuestions.length > 0) {
+                showNotification(`📝 Now reviewing ${skippedQuestions.length} skipped question(s)`);
+                
+                // Remove the first skipped question and set it as current
+                const skipped = skippedQuestions.shift();
+                currentQuestionIndex = skipped.originalIndex;
+                loadQuestion();
+                startQuestionTimer();
+                updateSkippedCount();
+            } else if (currentQuestionIndex >= 49) {
+                // No more skipped questions and we're at the end
+                submitTest();
+            }
+        }
+
+        function updateSkippedCount() {
+            document.getElementById('skippedCount').textContent = skippedQuestions.length;
+        }
+
+        function loadQuestion() {
+            visitedQuestions.add(currentQuestionIndex);
+            
+            const question = selectedQuestions[currentQuestionIndex];
+            document.getElementById('currentQ').textContent = currentQuestionIndex + 1;
+
+            // Check if this question was skipped before
+            const wasSkipped = isQuestionSkipped(currentQuestionIndex);
+            const skippedBadge = wasSkipped ? '<div class="skipped-badge">⚠️ Previously Skipped</div>' : '';
+
+            const questionHTML = `
+                ${skippedBadge}
+                <div class="question-number">Question ${currentQuestionIndex + 1} of 50</div>
+                <div class="question-text">${question.q}</div>
+                <div class="options">
+                    ${question.options.map((option, index) => `
+                        <label class="option ${userAnswers[currentQuestionIndex] === index ? 'selected' : ''}">
+                            <input type="radio" name="answer" value="${index}" 
+                                ${userAnswers[currentQuestionIndex] === index ? 'checked' : ''}
+                                onchange="selectAnswer(${index})">
+                            ${option}
+                        </label>
+                    `).join('')}
+                </div>
+            `;
+
+            document.getElementById('questionCard').innerHTML = questionHTML;
+
+            // Check if there are any non-skipped questions before current
+            let hasPreviousNonSkipped = false;
+            for (let i = currentQuestionIndex - 1; i >= 0; i--) {
+                if (!isQuestionSkipped(i)) {
+                    hasPreviousNonSkipped = true;
+                    break;
+                }
+            }
+            
+            // Update navigation buttons
+            document.getElementById('prevBtn').disabled = !hasPreviousNonSkipped;
+            
+            // Show next button unless at question 50 with no skipped questions
+            const showNext = currentQuestionIndex < 49 || skippedQuestions.length > 0;
+            document.getElementById('nextBtn').style.display = showNext ? 'inline-block' : 'none';
+            
+            // Show submit button at question 50 or when no more skipped questions
+            const showSubmit = (currentQuestionIndex === 49 && skippedQuestions.length === 0) || 
+                               (currentQuestionIndex >= 49 && skippedQuestions.length === 0);
+            document.getElementById('submitBtn').style.display = showSubmit ? 'inline-block' : 'none';
+            
+            // Don't restart timer here - it's handled by navigation functions
+        }
+
+        function selectAnswer(optionIndex) {
+            userAnswers[currentQuestionIndex] = optionIndex;
+            
+            // Remove from skipped questions if it was skipped
+            skippedQuestions = skippedQuestions.filter(sq => sq.originalIndex !== currentQuestionIndex);
+            updateSkippedCount();
+            
+            // Reload question to show selection (but don't restart timer)
+            const question = selectedQuestions[currentQuestionIndex];
+            const wasSkipped = isQuestionSkipped(currentQuestionIndex);
+            const skippedBadge = wasSkipped ? '<div class="skipped-badge">⚠️ Previously Skipped</div>' : '';
+
+            const questionHTML = `
+                ${skippedBadge}
+                <div class="question-number">Question ${currentQuestionIndex + 1} of 50</div>
+                <div class="question-text">${question.q}</div>
+                <div class="options">
+                    ${question.options.map((option, index) => `
+                        <label class="option ${userAnswers[currentQuestionIndex] === index ? 'selected' : ''}">
+                            <input type="radio" name="answer" value="${index}" 
+                                ${userAnswers[currentQuestionIndex] === index ? 'checked' : ''}
+                                onchange="selectAnswer(${index})">
+                            ${option}
+                        </label>
+                    `).join('')}
+                </div>
+            `;
+
+            document.getElementById('questionCard').innerHTML = questionHTML;
+            
+            // Update Previous button state after answering
+            let hasPreviousNonSkipped = false;
+            for (let i = currentQuestionIndex - 1; i >= 0; i--) {
+                if (!isQuestionSkipped(i)) {
+                    hasPreviousNonSkipped = true;
+                    break;
+                }
+            }
+            document.getElementById('prevBtn').disabled = !hasPreviousNonSkipped;
+        }
+
+        function previousQuestion() {
+            if (currentQuestionIndex > 0) {
+                // Find the previous non-skipped question
+                let prevIndex = currentQuestionIndex - 1;
+                
+                // Skip over any questions that are in the skipped list
+                while (prevIndex >= 0 && isQuestionSkipped(prevIndex)) {
+                    prevIndex--;
+                }
+                
+                // If we found a valid previous question, go to it
+                if (prevIndex >= 0) {
+                    currentQuestionIndex = prevIndex;
+                    loadQuestion();
+                    startQuestionTimer(); // Restart timer for this question
+                }
+            }
+        }
+
+        function isQuestionSkipped(questionIndex) {
+            return skippedQuestions.some(sq => sq.originalIndex === questionIndex);
+        }
+
+        function nextQuestion() {
+            if (currentQuestionIndex < 49) {
+                // Find the next non-skipped question
+                let nextIndex = currentQuestionIndex + 1;
+                
+                // Skip over any questions that are in the skipped list
+                while (nextIndex <= 49 && isQuestionSkipped(nextIndex)) {
+                    nextIndex++;
+                }
+                
+                // If we found a valid next question (within bounds), go to it
+                if (nextIndex <= 49) {
+                    currentQuestionIndex = nextIndex;
+                    loadQuestion();
+                    startQuestionTimer(); // Restart timer for this question
+                } else {
+                    // No more non-skipped questions, move to skipped questions
+                    moveToSkippedQuestions();
+                }
+            } else if (skippedQuestions.length > 0) {
+                // At question 50, move to skipped questions
+                moveToSkippedQuestions();
+            }
+        }
+
+        function submitTest() {
+            if (!confirm('Are you sure you want to submit the test?')) {
+                return;
+            }
+
+            clearInterval(timerInterval);
+            clearInterval(questionTimerInterval);
+            endTime = new Date();
+
+            // Calculate score
+            let correct = 0;
+            selectedQuestions.forEach((question, index) => {
+                if (userAnswers[index] === question.answer) {
+                    correct++;
+                }
+            });
+
+            const wrong = 50 - correct;
+            const score = ((correct / 50) * 100).toFixed(2);
+
+            // Save result
+            const result = {
+                name: studentName,
+                email: studentEmail,
+                score: score,
+                correct: correct,
+                wrong: wrong,
+                startTime: startTime.toLocaleString(),
+                endTime: endTime.toLocaleString(),
+                date: new Date().toLocaleDateString()
+            };
+
+            const results = JSON.parse(localStorage.getItem('testResults') || '[]');
+            results.push(result);
+            localStorage.setItem('testResults', JSON.stringify(results));
+
+            // Show result screen
+            document.getElementById('testScreen').classList.add('hidden');
+            document.getElementById('resultScreen').classList.remove('hidden');
+            
+            document.getElementById('resultName').textContent = studentName;
+            document.getElementById('resultEmail').textContent = studentEmail;
+            document.getElementById('resultStartTime').textContent = startTime.toLocaleString();
+            document.getElementById('resultEndTime').textContent = endTime.toLocaleString();
+        }
+
+        function showAdmin() {
+            document.getElementById('welcomeScreen').classList.add('hidden');
+            document.getElementById('testScreen').classList.add('hidden');
+            document.getElementById('resultScreen').classList.add('hidden');
+            document.getElementById('adminScreen').classList.remove('hidden');
+        }
+
+        function adminLogin() {
+            const password = document.getElementById('adminPassword').value;
+            
+            if (password === ADMIN_PASSWORD) {
+                document.getElementById('adminLogin').classList.add('hidden');
+                document.getElementById('adminPanel').classList.remove('hidden');
+                loadResults();
+                
+                // Load current logo URL if exists
+                const savedLogo = localStorage.getItem('companyLogo');
+                if (savedLogo && !savedLogo.startsWith('data:')) {
+                    document.getElementById('logoUrl').value = savedLogo;
+                }
+            } else {
+                alert('Incorrect password!');
+            }
+        }
+
+        function loadResults() {
+            const results = JSON.parse(localStorage.getItem('testResults') || '[]');
+            const tbody = document.getElementById('resultsTableBody');
+            
+            document.getElementById('totalTests').textContent = results.length;
+            
+            tbody.innerHTML = results.map(result => `
+                <tr>
+                    <td>${result.name}</td>
+                    <td>${result.email}</td>
+                    <td><strong>${result.score}%</strong></td>
+                    <td style="color: green;">${result.correct}/50</td>
+                    <td style="color: red;">${result.wrong}/50</td>
+                    <td>${result.date}</td>
+                    <td>${result.startTime}</td>
+                </tr>
+            `).join('');
+        }
+
+        function clearResults() {
+            if (confirm('Are you sure you want to delete all test results? This cannot be undone.')) {
+                localStorage.removeItem('testResults');
+                document.getElementById('totalTests').textContent = '0';
+                document.getElementById('resultsTableBody').innerHTML = '';
+                alert('All results have been cleared.');
+            }
+        }
+
+        // Logo Management Functions
+        function updateLogo() {
+            const logoUrl = document.getElementById('logoUrl').value.trim();
+            if (logoUrl) {
+                document.getElementById('companyLogo').src = logoUrl;
+                localStorage.setItem('companyLogo', logoUrl);
+                alert('Logo updated successfully!');
+            } else {
+                alert('Please enter a valid logo URL');
+            }
+        }
+
+        function uploadLogo() {
+            const file = document.getElementById('logoFile').files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const logoData = e.target.result;
+                    document.getElementById('companyLogo').src = logoData;
+                    localStorage.setItem('companyLogo', logoData);
+                    alert('Logo uploaded successfully!');
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        // Load saved logo on page load
+        window.addEventListener('DOMContentLoaded', function() {
+            const savedLogo = localStorage.getItem('companyLogo');
+            if (savedLogo) {
+                document.getElementById('companyLogo').src = savedLogo;
+            }
+        });
+    </script>
+</body>
+</html>
