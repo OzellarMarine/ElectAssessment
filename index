@@ -1,0 +1,1213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Online Quiz Test</title>
+
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      background: white;
+      border-radius: 15px;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+      overflow: hidden;
+    }
+
+    .header {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      padding: 30px;
+      text-align: center;
+    }
+
+    .header-logo {
+      max-width: 150px;
+      max-height: 80px;
+      margin-bottom: 15px;
+      background: white;
+      padding: 10px;
+      border-radius: 8px;
+    }
+
+    .header h1 {
+      font-size: 2.5em;
+      margin-bottom: 10px;
+    }
+
+    .welcome-screen, .test-selection-screen, .test-screen, .result-screen, .admin-screen {
+      padding: 40px;
+    }
+
+    .welcome-screen, .test-selection-screen { text-align: center; }
+
+    .welcome-screen h2, .test-selection-screen h2 {
+      color: #333;
+      margin-bottom: 20px;
+      font-size: 2em;
+    }
+
+    .test-sets {
+      display: flex;
+      gap: 30px;
+      max-width: 900px;
+      margin: 30px auto;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    .test-set-card {
+      flex: 1;
+      min-width: 260px;
+      background: #f8f9fa;
+      padding: 30px;
+      border-radius: 15px;
+      border: 3px solid transparent;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+
+    .test-set-card:hover {
+      border-color: #667eea;
+      transform: translateY(-5px);
+      box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+    }
+
+    .test-set-card.selected {
+      border-color: #667eea;
+      background: #e8eaff;
+    }
+
+    .test-set-card h3 {
+      color: #667eea;
+      font-size: 1.5em;
+      margin-bottom: 15px;
+    }
+
+    .test-set-card p { color: #666; margin: 10px 0; }
+
+    .instructions {
+      text-align: left;
+      max-width: 700px;
+      margin: 30px auto;
+      background: #f8f9fa;
+      padding: 25px;
+      border-radius: 10px;
+      border-left: 5px solid #667eea;
+    }
+
+    .instructions li { margin: 10px 0; color: #555; }
+
+    .student-info { max-width: 400px; margin: 30px auto; }
+
+    .student-info input {
+      width: 100%;
+      padding: 15px;
+      margin: 10px 0;
+      border: 2px solid #ddd;
+      border-radius: 8px;
+      font-size: 1em;
+    }
+
+    .btn {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      border: none;
+      padding: 15px 40px;
+      font-size: 1.1em;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: transform 0.2s;
+    }
+
+    .btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+    }
+
+    .btn:disabled { background: #ccc; cursor: not-allowed; }
+
+    .test-container { display: flex; gap: 30px; flex-wrap: wrap; }
+
+    .questions-section { flex: 3; min-width: 320px; }
+
+    .sidebar {
+      flex: 1;
+      min-width: 260px;
+      background: #f8f9fa;
+      padding: 20px;
+      border-radius: 10px;
+      position: sticky;
+      top: 20px;
+      height: fit-content;
+    }
+
+    .timer-box {
+      background: white;
+      padding: 20px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      text-align: center;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+
+    .timer {
+      font-size: 2em;
+      color: #667eea;
+      font-weight: bold;
+    }
+
+    .question-timer {
+      background: white;
+      padding: 15px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      text-align: center;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+      border: 2px solid #ff9800;
+    }
+
+    .question-timer-value {
+      font-size: 1.8em;
+      color: #ff9800;
+      font-weight: bold;
+    }
+
+    .question-timer-value.warning {
+      color: #f44336;
+      animation: pulse 1s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+
+    .time-info { font-size: 0.9em; color: #666; margin: 5px 0; }
+
+    .question-card {
+      background: white;
+      border: 2px solid #e0e0e0;
+      border-radius: 10px;
+      padding: 25px;
+      margin-bottom: 20px;
+      position: relative;
+    }
+
+    .skipped-badge {
+      position: absolute;
+      top: 15px;
+      right: 15px;
+      background: #ff9800;
+      color: white;
+      padding: 5px 15px;
+      border-radius: 20px;
+      font-size: 0.85em;
+      font-weight: bold;
+    }
+
+    .question-number { color: #667eea; font-weight: bold; margin-bottom: 15px; }
+
+    .question-text {
+      font-size: 1.1em;
+      color: #333;
+      margin-bottom: 20px;
+      line-height: 1.6;
+      white-space: pre-wrap;
+    }
+
+    .question-image {
+      max-width: 100%;
+      max-height: 300px;
+      margin: 20px 0;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+      display: block;
+    }
+
+    .options { display: flex; flex-direction: column; gap: 12px; }
+
+    .option {
+      padding: 15px;
+      border: 2px solid #e0e0e0;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+
+    .option:hover { border-color: #667eea; background: #f8f9ff; }
+    .option.selected { border-color: #667eea; background: #e8eaff; }
+    .option input[type="radio"] { margin-right: 10px; }
+
+    .navigation {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 30px;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .result-screen { text-align: center; }
+
+    .result-details {
+      background: #f8f9fa;
+      padding: 30px;
+      border-radius: 10px;
+      max-width: 600px;
+      margin: 30px auto;
+      text-align: left;
+    }
+
+    .result-details p { margin: 12px 0; font-size: 1.1em; color: #555; }
+
+    .admin-login { max-width: 400px; margin: 0 auto; }
+
+    .admin-login input {
+      width: 100%;
+      padding: 15px;
+      margin: 10px 0;
+      border: 2px solid #ddd;
+      border-radius: 8px;
+    }
+
+    .results-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+      overflow-x: auto;
+    }
+
+    .results-table th, .results-table td {
+      padding: 12px;
+      text-align: left;
+      border-bottom: 1px solid #ddd;
+      vertical-align: top;
+    }
+
+    .results-table th { background: #667eea; color: white; }
+
+    .hidden { display: none; }
+
+    .admin-link {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background: rgba(0,0,0,0.7);
+      color: white;
+      padding: 10px 20px;
+      border-radius: 20px;
+      text-decoration: none;
+      font-size: 0.9em;
+      z-index: 999;
+    }
+
+    .notification {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background: #ff9800;
+      color: white;
+      padding: 15px 25px;
+      border-radius: 8px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+      z-index: 1000;
+      animation: slideIn 0.3s ease-out;
+      max-width: 360px;
+    }
+
+    @keyframes slideIn {
+      from { transform: translateX(400px); opacity: 0; }
+      to { transform: translateX(0); opacity: 1; }
+    }
+  </style>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+</head>
+
+<body>
+  <div class="container">
+    <div class="header">
+      <img id="companyLogo" class="header-logo"
+        src="https://via.placeholder.com/150x80/ffffff/667eea?text=Your+Logo" alt="Company Logo" />
+      <h1>📝 Online Quiz Test</h1>
+      <p>Test Your Knowledge</p>
+    </div>
+
+    <!-- Test Selection Screen -->
+    <div id="testSelectionScreen" class="test-selection-screen">
+      <h2>Select Your Test</h2>
+      <div class="test-sets">
+        <div class="test-set-card" onclick="selectTestSet(2)" id="testSet2">
+          <h3>📖 Test Set 2</h3>
+          <p><strong>Mode:</strong> Complete question set</p>
+          <p><strong>Duration:</strong> 20 minutes</p>
+          <p><strong>Per Question:</strong> 1 minute</p>
+          <p><strong>PDF:</strong> Available after submission</p>
+        </div>
+      </div>
+      <div style="margin-top: 30px;">
+        <button class="btn" onclick="proceedToWelcome()" id="proceedBtn" disabled>Continue</button>
+      </div>
+    </div>
+
+    <!-- Welcome Screen -->
+    <div id="welcomeScreen" class="welcome-screen hidden">
+      <h2>Welcome to the Quiz Test!</h2>
+      <div class="instructions">
+        <h3>📋 Instructions:</h3>
+        <ul>
+          <li><strong>Test Set:</strong> <span id="selectedSetInfo"></span></li>
+          <li>Total time limit: <span id="totalTimeInfo">--</span> minutes</li>
+          <li><strong>⏱️ Each question has 1 minute timer</strong></li>
+          <li><strong>⚠️ Unanswered questions will auto-skip after 1 minute</strong></li>
+          <li><strong>🔒 Skipped questions cannot be accessed via "Previous" button</strong></li>
+          <li><strong>Skipped questions will appear at the end for review</strong></li>
+          <li>Select one answer per question</li>
+          <li>Submit when completed or time runs out</li>
+        </ul>
+      </div>
+      <div class="student-info">
+        <input type="text" id="studentName" placeholder="Enter your name" required />
+        <input type="email" id="studentEmail" placeholder="Enter your email" required />
+        <br /><br />
+        <button class="btn" onclick="startTest()">Start Test</button>
+        <button class="btn" onclick="goBackToSelection()" style="background: #6c757d; margin-left: 10px;">Back</button>
+      </div>
+    </div>
+
+    <!-- Test Screen -->
+    <div id="testScreen" class="test-screen hidden">
+      <div class="test-container">
+        <div class="questions-section">
+          <div id="questionCard" class="question-card"></div>
+          <div class="navigation">
+            <button class="btn" onclick="previousQuestion()" id="prevBtn">← Previous</button>
+            <button class="btn" onclick="nextQuestion()" id="nextBtn">Next →</button>
+            <button class="btn" onclick="submitTest()" id="submitBtn" style="background: #28a745;">Submit Test</button>
+          </div>
+        </div>
+        <div class="sidebar">
+          <div class="question-timer">
+            <h4>⏱️ Question Timer</h4>
+            <div class="question-timer-value" id="questionTimer">01:00</div>
+            <p style="font-size: 0.9em; color: #666; margin-top: 5px;">Auto-skip after 1 min</p>
+          </div>
+          <div class="timer-box">
+            <h3>⏱️ Total Time</h3>
+            <div class="timer" id="timer">30:00</div>
+          </div>
+          <div class="timer-box">
+            <h4>Test Information</h4>
+            <p class="time-info">Set: <span id="currentSet"></span></p>
+            <p class="time-info">Start: <span id="startTime"></span></p>
+            <p class="time-info">End: <span id="endTime"></span></p>
+            <p class="time-info">Question: <span id="currentQ">1</span> / <span id="totalQ">0</span></p>
+            <p class="time-info" style="color: #ff9800;">Skipped: <span id="skippedCount">0</span></p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Result Screen -->
+    <div id="resultScreen" class="result-screen hidden">
+      <h2>🎉 Test Completed!</h2>
+      <div style="margin: 40px 0;">
+        <svg width="120" height="120" viewBox="0 0 120 120" style="margin: 0 auto; display: block;">
+          <circle cx="60" cy="60" r="50" fill="#4CAF50" />
+          <path d="M40 60 L55 75 L80 45" stroke="white" stroke-width="8" fill="none" stroke-linecap="round"
+            stroke-linejoin="round" />
+        </svg>
+      </div>
+
+      <div class="result-details">
+        <p><strong>Test Set:</strong> <span id="resultTestSet"></span></p>
+        <p><strong>Name:</strong> <span id="resultName"></span></p>
+        <p><strong>Email:</strong> <span id="resultEmail"></span></p>
+        <p><strong>Total Questions:</strong> <span id="resultTotalQ"></span></p>
+        <p><strong>Correct:</strong> <span id="resultCorrect"></span></p>
+        <p><strong>Wrong:</strong> <span id="resultWrong"></span></p>
+        <p><strong>Score:</strong> <span id="resultScore"></span></p>
+        <p><strong>Start Time:</strong> <span id="resultStartTime"></span></p>
+        <p><strong>End Time:</strong> <span id="resultEndTime"></span></p>
+      </div>
+
+      <div style="margin-top: 20px;">
+        <!-- ✅ FIX: Add explicit buttons so user can continue set 2 OR go home -->
+        
+        <button class="btn" onclick="goHome()" style="background:#6c757d; margin-left:10px;">Back to Home</button>
+      </div>
+
+      <p style="margin-top: 25px; color: #666; font-size: 1.1em;">
+        Your test has been submitted successfully!<br />
+        Results will be reviewed by the administrator.
+      </p>
+    </div>
+
+    <!-- Admin Screen -->
+    <div id="adminScreen" class="admin-screen hidden">
+      <div id="adminLogin" class="admin-login">
+        <h2>Admin Login</h2>
+        <input type="password" id="adminPassword" placeholder="Enter admin password" />
+        <br /><br />
+        <button class="btn" onclick="adminLogin()">Login</button>
+      </div>
+
+      <div id="adminPanel" class="hidden">
+        <h2>Test Results Dashboard</h2>
+
+        <div style="background: #f8f9fa; padding: 20px; border-radius: 10px; margin-bottom: 20px;">
+          <h3>Company Logo Settings</h3>
+          <p style="color: #666; margin: 10px 0;">Enter your logo URL or upload an image:</p>
+          <input type="text" id="logoUrl" placeholder="Enter logo URL (e.g., https://yoursite.com/logo.png)"
+            style="width: 70%; padding: 10px; border: 2px solid #ddd; border-radius: 5px;" />
+          <button class="btn" onclick="updateLogo()" style="padding: 10px 20px;">Update Logo</button>
+          <p style="color: #999; font-size: 0.9em; margin-top: 10px;">
+            Or upload image:
+            <input type="file" id="logoFile" accept="image/*" onchange="uploadLogo()" style="margin-left: 10px;" />
+          </p>
+        </div>
+
+        <p style="color: #666; margin-bottom: 20px;">Total Tests Taken: <strong id="totalTests">0</strong></p>
+
+        <div style="overflow-x: auto;">
+          <table class="results-table">
+            <thead>
+              <tr>
+                <th>Test Set</th>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Score</th>
+                <th>Correct</th>
+                <th>Wrong</th>
+                <th>Date</th>
+                <th>Start Time</th>
+                <th>PDF</th>
+              </tr>
+            </thead>
+            <tbody id="resultsTableBody"></tbody>
+          </table>
+        </div>
+
+        <br />
+        <button class="btn" onclick="goHome()">Back to Test</button>
+        <button class="btn" onclick="clearResults()" style="background: #dc3545; margin-left: 10px;">Clear All Results</button>
+      </div>
+    </div>
+  </div>
+
+  <a href="#" class="admin-link" onclick="showAdmin(); return false;">Admin Panel</a>
+
+<script> 
+
+  const questionBankSet2 = [
+     {q: "What does the helm order “Midships” mean?", options: ["Turn the wheel fully to port", "Keep the ship steady on course", "Bring the rudder to zero position", "Stop the steering gear"], answer: 2},
+ {q: "Which is the primary duty of a lookout?", options: ["Depend only on radar", "Leave bridge periodically", "Maintain lookout by sight, hearing & all available means", "Follow daylight procedures"], answer: 2},
+ {q: "When taking over cargo watch, the AB should FIRST:", options: ["Start cargo operations", "Check cargo plan, ongoing operations and moorings.", "Leave the area if cargo is completed", "Only follow orders from shore staff"], answer: 1},
+ {q: "The main cause of corrosion on deck structures is:", options: ["Cargo weight", "Heat from the sun", "Coating breakdown exposing steel", "Poor welding"], answer: 2},
+ {q: "Why is surface preparation important before painting?", options: ["To improve paint colour", "To reduce paint consumption", "To ensure proper paint adhesion and durability", "To speed up drying time"], answer: 2},
+ {q: "Which paint is commonly used for corrosion protection on steel surfaces?", options: ["Polyurethane paint", "Epoxy paint", "Acrylic paint", "Enamel paint"], answer: 1},
+ {q: "One major advantage of airless spray painting is:", options: ["No need for PPE", "Thicker coating with better coverage", "No surface preparation required", "Faster rust formation"], answer: 1},
+ {q: "Why is maintaining correct DFT important?", options: ["To reduce drying time", "To avoid paint wastage only", "To ensure proper corrosion protection", "To improve paint gloss"], answer: 2},
+ {q: "While using a hydro blaster, which PPE is MOST important?", options: ["Cotton gloves", "Safety helmet only", "Face shield, cut-resistant gloves, boots and apron", "Ordinary shoes"], answer: 2},
+ {q: "Proper lubrication of deck machinery helps to:", options: ["Increase noise", "Reduce friction, wear and avoid breakdowns.", "Increase fuel consumption", "Delay operations"], answer: 1},
+ {q: "A Permit to Work system is mainly used to:", options: ["Increase paperwork", "Allow faster job completion", "Ensure work is carried out safely under controlled conditions", "Replace risk assessments"], answer: 2},
+ {q: "Which item is part of Fire Fighting Appliances (FFA)?", options: ["Lifebuoy", "Fire extinguisher", "Lifejacket", "Immersion suit"], answer: 1},
+ {q: "While mooring, snap-back zones should be:", options: ["Clearly marked and kept clear of all personnel", "Used for standing during operations", "Ignored during calm weather", "Used only by officers"], answer: 0},
+ {q: "Before renewing a crane wire, the AB must ensure:", options: ["Crane is under load", "Power supply is isolated and hooks are secured", "Only shore staff are present", "Wire is greased"], answer: 1},
+ {q: "Before operating hatch covers, the AB should:", options: ["Start immediately to save time", "Ensure area is clear and safety checks are done", "Stand on the hatch cover", "Operate without communication"], answer: 1},
+ {q: "Ease to 5° port means:", options: ["Put rudder hard to port", "Reduce rudder angle until 5° port", "Shift helm to midships", "Maintain present rudder angle"], answer: 1},
+ {q: "Which is an LSA item?", options: ["Fire hose", "BA set", "Liferaft", "Fire extinguisher"], answer: 2},
+ {q: "Security Level 1 means:", options: ["Emergency", "Heightened risk", "Normal operations", "Complete Lockdown"], answer: 2},
+ {q: "Primary duty [of the Gangway Watch] is to:", options: ["Assist cargo", "Control access & record movements and maintain safe access", "Assist store Pick up", "Scrolling the Mobile Phone"], answer: 1},
+ {q: "Before loading, holds must be:", options: ["Wet", "Clean, dry, residue-free", "Painted only", "Inspected by stevedores only"], answer: 1},
+{q: "What is the company’s standard Drugs & Alcohol (D&A) policy onboard?", options: ["Alcohol allowed after working hours", "Alcohol allowed with Master’s permission", "Zero tolerance during duty periods", "Alcohol allowed in port only"], answer: 2},
+ {q: "If an AB suspects a colleague is under the influence of alcohol, the AB should:", options: ["Ignore the situation", "Confront the person directly", "Immediately inform the duty officer", "Record it in the logbook later"], answer: 2},
+ {q: "As per MLC, the minimum rest hours required in any 24-hour period is:", options: ["6 hours", "8 hours", "10 hours", "12 hours"], answer: 2},
+ {q: "Which of the following is a basic right of a seafarer under MLC?", options: ["Free shore leave anytime", "Proper accommodation, food, and medical care", "Extra leave on request", "Reduced working hours always"], answer: 1},
+ {q: "The main purpose of lubricating deck machinery is to:", options: ["Improve appearance", "Reduce friction, prevent wear and avoid breakdowns", "Increase operating speed", "Reduce manpower"], answer: 1},
+ {q: "Before lubricating moving machinery, the AB must ensure:", options: ["Machinery is running normally", "Guards are removed", "Machinery is stopped or safely isolated", "Lubrication is done quickly"], answer: 2},
+ {q: "A Permit to Work system is used to:", options: ["Speed up maintenance", "Control and manage hazardous work safely", "Reduce documentation", "Replace toolbox meetings"], answer: 1},
+ {q: "Which activity requires a Permit to Work?", options: ["Deck washing", "Greasing winches", "Entry into enclosed spaces", "Painting Pipelines"], answer: 2},
+ {q: "Which item is classified as Fire Fighting Appliance (FFA)?", options: ["Lifebuoy", "Immersion suit", "Fire extinguisher", "Liferaft"], answer: 2},
+ {q: "During mooring operations, personnel should:", options: ["Stand close to ropes for control", "Stand inside snap-back zones", "Keep well clear of ropes under tension", "Cross ropes when necessary"], answer: 2}
+
+
+  ];
+
+  /***********************
+   * ✅ STATE
+   ***********************/
+  let selectedQuestions = [];
+  let currentQuestionIndex = 0;
+  let userAnswers = [];
+  let studentName = "";
+  let studentEmail = "";
+  let startTime = null;
+  let endTime = null;
+  let timerInterval = null;
+  let questionTimerInterval = null;
+  let remainingSeconds = 3600;
+  let questionRemainingSeconds = 60;
+
+  let skippedQuestions = [];
+  let visitedQuestions = new Set();
+  let selectedTestSet = 0;
+  let totalQuestions = 0;
+
+  const ADMIN_PASSWORD = "admin123";
+
+  // ✅ FIX: do NOT auto-start set 2 inside submit (it was unreliable)
+  // We'll show a clear "Start Test Set 2" button on result screen.
+ 
+
+  /***********************
+   * ✅ HELPERS
+   ***********************/
+  function shuffleArray(array) {
+    const shuffled = [...array];
+    for (let i = shuffled.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+    }
+    return shuffled;
+  }
+
+  function showNotification(message) {
+    const existing = document.querySelector(".notification");
+    if (existing) existing.remove();
+
+    const notification = document.createElement("div");
+    notification.className = "notification";
+    notification.textContent = message;
+    document.body.appendChild(notification);
+
+    setTimeout(() => notification.remove(), 3000);
+  }
+
+  function isQuestionSkipped(questionIndex) {
+    return skippedQuestions.some((sq) => sq.originalIndex === questionIndex);
+  }
+
+  function updateSkippedCount() {
+    document.getElementById("skippedCount").textContent = skippedQuestions.length;
+  }
+
+  function hideAllScreens() {
+    ["testSelectionScreen","welcomeScreen","testScreen","resultScreen","adminScreen"].forEach(id => {
+      document.getElementById(id).classList.add("hidden");
+    });
+  }
+
+  /***********************
+   * ✅ UI NAV
+   ***********************/
+  function selectTestSet() {
+  selectedTestSet = 2;
+  document.getElementById("testSet2").classList.add("selected");
+  document.getElementById("proceedBtn").disabled = false;
+}
+
+
+  function proceedToWelcome() {
+    if (selectedTestSet === 0) {
+      alert("Please select a test set!");
+      return;
+    }
+
+const setInfo = `Set 2 - All questions (${questionBankSet2.length} questions)`;
+
+
+    document.getElementById("selectedSetInfo").textContent = setInfo;
+
+    // ✅ Update total time info based on selected set
+
+document.getElementById("selectedSetInfo").textContent =
+  `Test Set 2 - All questions (${questionBankSet2.length})`;
+
+document.getElementById("totalTimeInfo").textContent = "30";
+
+    hideAllScreens();
+    document.getElementById("welcomeScreen").classList.remove("hidden");
+  }
+
+  function goBackToSelection() {
+    hideAllScreens();
+    document.getElementById("testSelectionScreen").classList.remove("hidden");
+  }
+
+  function goHome() {
+    // reset selection visuals
+    selectedTestSet = 0;
+    document.querySelectorAll(".test-set-card").forEach((card) => card.classList.remove("selected"));
+    document.getElementById("proceedBtn").disabled = true;
+
+    hideAllScreens();
+    document.getElementById("testSelectionScreen").classList.remove("hidden");
+  }
+
+  /***********************
+   * ✅ TEST START / RESET
+   ***********************/
+  function resetTimers() {
+    if (timerInterval) clearInterval(timerInterval);
+    if (questionTimerInterval) clearInterval(questionTimerInterval);
+    timerInterval = null;
+    questionTimerInterval = null;
+  }
+
+function setupTestForSet() {
+  selectedTestSet = 2;
+
+  selectedQuestions = [...questionBankSet2];
+  totalQuestions = questionBankSet2.length;
+
+  userAnswers = new Array(totalQuestions).fill(null);
+  skippedQuestions = [];
+  visitedQuestions = new Set();
+  currentQuestionIndex = 0;
+
+  document.getElementById("totalQ").textContent = totalQuestions;
+  document.getElementById("currentSet").textContent = "Test Set 2";
+
+  // ✅ TOTAL TIME = 30 MINUTES
+  remainingSeconds = 30 * 60;
+
+  startTime = new Date();
+  document.getElementById("startTime").textContent = startTime.toLocaleTimeString();
+
+  const endTimeCalc = new Date(startTime.getTime() + 30 * 60000);
+  document.getElementById("endTime").textContent = endTimeCalc.toLocaleTimeString();
+
+  updateSkippedCount();
+}
+
+
+  function startTest() {
+    const name = document.getElementById("studentName").value.trim();
+    const email = document.getElementById("studentEmail").value.trim();
+
+    if (!name || !email) {
+      alert("Please enter your name and email!");
+      return;
+    }
+
+    studentName = name;
+    studentEmail = email;
+
+    resetTimers();
+    setupTestForSet(selectedTestSet);
+
+    hideAllScreens();
+    document.getElementById("testScreen").classList.remove("hidden");
+
+    loadQuestion();
+    startTimer();
+    startQuestionTimer();
+  }
+
+  /***********************
+   * ✅ TIMERS
+   ***********************/
+  function startTimer() {
+    if (timerInterval) clearInterval(timerInterval);
+
+    timerInterval = setInterval(() => {
+      remainingSeconds--;
+
+      const minutes = Math.floor(remainingSeconds / 60);
+      const seconds = remainingSeconds % 60;
+
+      document.getElementById("timer").textContent =
+        `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
+
+      if (remainingSeconds <= 0) {
+        resetTimers();
+        submitTest(true);
+      }
+    }, 1000);
+  }
+
+  function startQuestionTimer() {
+    questionRemainingSeconds = 60;
+    updateQuestionTimerDisplay();
+
+    if (questionTimerInterval) clearInterval(questionTimerInterval);
+
+    questionTimerInterval = setInterval(() => {
+      questionRemainingSeconds--;
+      updateQuestionTimerDisplay();
+
+      if (questionRemainingSeconds <= 0) {
+        clearInterval(questionTimerInterval);
+        questionTimerInterval = null;
+        autoSkipQuestion();
+      }
+    }, 1000);
+  }
+
+  function updateQuestionTimerDisplay() {
+    const minutes = Math.floor(questionRemainingSeconds / 60);
+    const seconds = questionRemainingSeconds % 60;
+    const timerElement = document.getElementById("questionTimer");
+
+    timerElement.textContent = `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
+
+    if (questionRemainingSeconds <= 10) timerElement.classList.add("warning");
+    else timerElement.classList.remove("warning");
+  }
+
+  /***********************
+   * ✅ QUESTION FLOW
+   ***********************/
+  function autoSkipQuestion() {
+    if (userAnswers[currentQuestionIndex] === null) {
+      const alreadySkipped = skippedQuestions.some((sq) => sq.originalIndex === currentQuestionIndex);
+      if (!alreadySkipped) {
+        skippedQuestions.push({ question: selectedQuestions[currentQuestionIndex], originalIndex: currentQuestionIndex });
+        showNotification(`⚠️ Question ${currentQuestionIndex + 1} skipped! It will appear at the end.`);
+      }
+    }
+
+    updateSkippedCount();
+
+    if (currentQuestionIndex < totalQuestions - 1) {
+      let nextIndex = currentQuestionIndex + 1;
+      while (nextIndex <= totalQuestions - 1 && isQuestionSkipped(nextIndex)) nextIndex++;
+
+      if (nextIndex <= totalQuestions - 1) {
+        currentQuestionIndex = nextIndex;
+        loadQuestion();
+        startQuestionTimer();
+      } else {
+        moveToSkippedQuestions();
+      }
+    } else {
+      if (skippedQuestions.length > 0) moveToSkippedQuestions();
+      else submitTest();
+    }
+  }
+
+  function moveToSkippedQuestions() {
+    if (skippedQuestions.length > 0) {
+      showNotification(`📝 Now reviewing skipped question(s)`);
+
+      const skipped = skippedQuestions.shift();
+      currentQuestionIndex = skipped.originalIndex;
+      loadQuestion();
+      startQuestionTimer();
+      updateSkippedCount();
+    } else if (currentQuestionIndex >= totalQuestions - 1) {
+      submitTest();
+    }
+  }
+
+  function loadQuestion() {
+    visitedQuestions.add(currentQuestionIndex);
+
+    const question = selectedQuestions[currentQuestionIndex];
+    document.getElementById("currentQ").textContent = currentQuestionIndex + 1;
+
+    const wasSkipped = isQuestionSkipped(currentQuestionIndex);
+    const skippedBadge = wasSkipped ? '<div class="skipped-badge">⚠️ Previously Skipped</div>' : "";
+
+    // ✅ FIX: your questions use "src" not "img"
+    const imgPath = question.img || question.src || "";
+    const imageHTML = imgPath ? `<img src="${imgPath}" alt="Question Image" class="question-image">` : "";
+
+    const questionHTML = `
+      ${skippedBadge}
+      <div class="question-number">Question ${currentQuestionIndex + 1} of ${totalQuestions}</div>
+      <div class="question-text">${question.q}</div>
+      ${imageHTML}
+      <div class="options">
+        ${question.options.map((option, index) => `
+          <label class="option ${userAnswers[currentQuestionIndex] === index ? "selected" : ""}">
+            <input type="radio" name="answer" value="${index}"
+              ${userAnswers[currentQuestionIndex] === index ? "checked" : ""}
+              onchange="selectAnswer(${index})">
+            ${option}
+          </label>
+        `).join("")}
+      </div>
+    `;
+
+    document.getElementById("questionCard").innerHTML = questionHTML;
+
+    // Previous available?
+    let hasPreviousNonSkipped = false;
+    for (let i = currentQuestionIndex - 1; i >= 0; i--) {
+      if (!isQuestionSkipped(i)) { hasPreviousNonSkipped = true; break; }
+    }
+
+    // Next available?
+    let hasNextNonSkipped = false;
+    for (let i = currentQuestionIndex + 1; i <= totalQuestions - 1; i++) {
+      if (!isQuestionSkipped(i)) { hasNextNonSkipped = true; break; }
+    }
+
+    document.getElementById("prevBtn").disabled = !hasPreviousNonSkipped;
+
+    const showNext = hasNextNonSkipped || skippedQuestions.length > 0;
+    document.getElementById("nextBtn").style.display = showNext ? "inline-block" : "none";
+
+    const showSubmit = !hasNextNonSkipped && skippedQuestions.length === 0;
+    document.getElementById("submitBtn").style.display = showSubmit ? "inline-block" : "none";
+  }
+
+  function selectAnswer(optionIndex) {
+    userAnswers[currentQuestionIndex] = optionIndex;
+    skippedQuestions = skippedQuestions.filter((sq) => sq.originalIndex !== currentQuestionIndex);
+    updateSkippedCount();
+    loadQuestion();
+  }
+
+  function previousQuestion() {
+    if (currentQuestionIndex > 0) {
+      let prevIndex = currentQuestionIndex - 1;
+      while (prevIndex >= 0 && isQuestionSkipped(prevIndex)) prevIndex--;
+
+      if (prevIndex >= 0) {
+        currentQuestionIndex = prevIndex;
+        loadQuestion();
+        startQuestionTimer();
+      }
+    }
+  }
+
+  function nextQuestion() {
+    if (currentQuestionIndex < totalQuestions - 1) {
+      let nextIndex = currentQuestionIndex + 1;
+      while (nextIndex <= totalQuestions - 1 && isQuestionSkipped(nextIndex)) nextIndex++;
+
+      if (nextIndex <= totalQuestions - 1) {
+        currentQuestionIndex = nextIndex;
+        loadQuestion();
+        startQuestionTimer();
+      } else {
+        moveToSkippedQuestions();
+      }
+    } else if (skippedQuestions.length > 0) {
+      moveToSkippedQuestions();
+    }
+  }
+
+  /***********************
+   * ✅ SUBMIT + SAVE
+   ***********************/
+  function submitTest(isAuto = false) {
+    if (!isAuto && !confirm("Are you sure you want to submit the test?")) return;
+
+    resetTimers();
+    endTime = new Date();
+
+    let correct = 0;
+    const detailedReview = selectedQuestions.map((question, index) => {
+      const userAnsIndex = userAnswers[index];
+      const correctAnsIndex = question.answer;
+
+      const userAnsText =
+        (userAnsIndex === null || userAnsIndex === undefined)
+          ? "Not Answered"
+          : question.options[userAnsIndex];
+
+      const correctAnsText = question.options[correctAnsIndex];
+
+      let status = "Not Answered";
+      if (userAnsIndex !== null && userAnsIndex !== undefined) {
+        status = (userAnsIndex === correctAnsIndex) ? "Correct" : "Wrong";
+      }
+      if (status === "Correct") correct++;
+
+      return {
+        questionText: question.q,
+        options: question.options,
+        userAnswerIndex: userAnsIndex,
+        userAnswerText: userAnsText,
+        correctAnswerIndex: correctAnsIndex,
+        correctAnswerText: correctAnsText,
+        status: status
+      };
+    });
+
+    const wrong = totalQuestions - correct;
+    const score = ((correct / totalQuestions) * 100).toFixed(2);
+
+    const result = {
+      id: Date.now(),
+      testSet: "Set " + selectedTestSet,
+      name: studentName,
+      email: studentEmail,
+      score: score,
+      correct: correct,
+      wrong: wrong,
+      totalQuestions: totalQuestions,
+      startTime: startTime.toLocaleString(),
+      endTime: endTime.toLocaleString(),
+      date: new Date().toLocaleDateString(),
+      detailedReview: detailedReview
+    };
+
+    const results = JSON.parse(localStorage.getItem("testResults") || "[]");
+    results.push(result);
+    localStorage.setItem("testResults", JSON.stringify(results));
+
+    // Show student result screen
+    hideAllScreens();
+    document.getElementById("resultScreen").classList.remove("hidden");
+
+    document.getElementById("resultTestSet").textContent = result.testSet;
+    document.getElementById("resultName").textContent = result.name;
+    document.getElementById("resultEmail").textContent = result.email;
+    document.getElementById("resultTotalQ").textContent = result.totalQuestions;
+    document.getElementById("resultCorrect").textContent = result.correct;
+    document.getElementById("resultWrong").textContent = result.wrong;
+    document.getElementById("resultScore").textContent = result.score + "%";
+    document.getElementById("resultStartTime").textContent = result.startTime;
+    document.getElementById("resultEndTime").textContent = result.endTime;
+   }
+
+
+
+  /***********************
+   * ✅ ADMIN
+   ***********************/
+  function showAdmin() {
+    hideAllScreens();
+    document.getElementById("adminScreen").classList.remove("hidden");
+  }
+
+  function adminLogin() {
+    const password = document.getElementById("adminPassword").value;
+
+    if (password === ADMIN_PASSWORD) {
+      document.getElementById("adminLogin").classList.add("hidden");
+      document.getElementById("adminPanel").classList.remove("hidden");
+      loadResults();
+
+      const savedLogo = localStorage.getItem("companyLogo");
+      if (savedLogo && !savedLogo.startsWith("data:")) {
+        document.getElementById("logoUrl").value = savedLogo;
+      }
+    } else {
+      alert("Incorrect password!");
+    }
+  }
+
+    function loadResults() {
+      const results = JSON.parse(localStorage.getItem("testResults") || "[]");
+      const tbody = document.getElementById("resultsTableBody");
+      document.getElementById("totalTests").textContent = results.length;
+
+      tbody.innerHTML = results
+        .map((result) => {
+          const hasPdf = result.detailedReview && result.detailedReview.length > 0;
+
+          return `
+            <tr>
+              <td><strong>${result.testSet}</strong></td>
+              <td>${result.name}</td>
+              <td>${result.email}</td>
+              <td><strong>${result.score}%</strong></td>
+              <td style="color: green;">${result.correct}/${result.totalQuestions}</td>
+              <td style="color: red;">${result.wrong}/${result.totalQuestions}</td>
+              <td>${result.date}</td>
+              <td>${result.startTime}</td>
+              <td>
+                ${hasPdf
+                  ? `<button class="btn" style="padding:6px 12px; font-size:0.9em;" onclick="generatePDF(${result.id})">View PDF</button>`
+                  : `<span style="color:#999;">-</span>`
+                }
+              </td>
+            </tr>
+          `;
+        })
+        .join("");
+    }
+
+    function clearResults() {
+      if (confirm("Are you sure you want to delete all test results? This cannot be undone.")) {
+        localStorage.removeItem("testResults");
+        document.getElementById("totalTests").textContent = "0";
+        document.getElementById("resultsTableBody").innerHTML = "";
+        alert("All results have been cleared.");
+      }
+    }
+
+    function updateLogo() {
+      const logoUrl = document.getElementById("logoUrl").value.trim();
+      if (logoUrl) {
+        document.getElementById("companyLogo").src = logoUrl;
+        localStorage.setItem("companyLogo", logoUrl);
+        alert("Logo updated successfully!");
+      } else {
+        alert("Please enter a valid logo URL");
+      }
+    }
+
+    function uploadLogo() {
+      const file = document.getElementById("logoFile").files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = function (e) {
+          const logoData = e.target.result;
+          document.getElementById("companyLogo").src = logoData;
+          localStorage.setItem("companyLogo", logoData);
+          alert("Logo uploaded successfully!");
+        };
+        reader.readAsDataURL(file);
+      }
+    }
+
+    /***********************
+     * ✅ PDF GENERATION
+     * Correct = Green, Wrong = Red, Not Answered = Orange
+     * Removes weird spaced letters like "S &t& a& t& u s : 'L W r o n g"
+     ***********************/
+    function generatePDF(resultId) {
+    const results = JSON.parse(localStorage.getItem('testResults') || '[]');
+    const result = results.find(r => r.id === resultId);
+
+    if (!result || !result.detailedReview || result.detailedReview.length === 0) {
+        alert("PDF data not found for this test.");
+        return;
+    }
+
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+
+    // ✅ Strong cleaner for "S &t& a& t& u s : 'L W r o n g"
+    function cleanText(text) {
+        if (text === null || text === undefined) return "";
+
+        let s = String(text);
+
+        // remove & characters
+        s = s.replace(/&/g, "");
+
+        // remove weird spaced letters (ex: "S t a t u s" -> "Status")
+        // works for any word split like "W r o n g" -> "Wrong"
+        s = s.replace(/\b([A-Za-z])(\s+[A-Za-z]){2,}\b/g, (m) => m.replace(/\s+/g, ""));
+
+        // normalize multiple spaces
+        s = s.replace(/\s+/g, " ").trim();
+
+        // fix quote spacing
+        s = s.replace(/\s*'\s*/g, "'");
+
+        return s;
+    }
+
+    function normalizeStatus(status) {
+        status = cleanText(status).toLowerCase();
+        if (status.includes("correct")) return "Correct";
+        if (status.includes("wrong")) return "Wrong";
+        return "Not Answered";
+    }
+
+    function setStatusColor(status) {
+        if (status === "Correct") doc.setTextColor(0, 153, 0);      // green
+        else if (status === "Wrong") doc.setTextColor(220, 0, 0);   // red
+        else doc.setTextColor(255, 140, 0);                         // orange
+    }
+
+    function black() { doc.setTextColor(0, 0, 0); }
+
+    let y = 10;
+
+    // Header
+    doc.setFontSize(14);
+    black();
+    doc.text(`Quiz Test Report (${cleanText(result.testSet)})`, 10, y);
+    y += 10;
+
+    doc.setFontSize(11);
+    doc.text(`Name: ${cleanText(result.name)}`, 10, y); y += 6;
+    doc.text(`Email: ${cleanText(result.email)}`, 10, y); y += 6;
+    doc.text(`Score: ${cleanText(result.score)}%`, 10, y); y += 6;
+
+    // Summary with color
+    doc.text(`Correct:`, 10, y);
+    doc.setTextColor(0, 153, 0);
+    doc.text(`${result.correct}`, 30, y);
+    black();
+
+    doc.text(`Wrong:`, 50, y);
+    doc.setTextColor(220, 0, 0);
+    doc.text(`${result.wrong}`, 68, y);
+    black();
+    y += 6;
+
+    doc.text(`Date: ${cleanText(result.date)}`, 10, y); y += 6;
+    doc.text(`Start: ${cleanText(result.startTime)}`, 10, y); y += 6;
+    doc.text(`End: ${cleanText(result.endTime)}`, 10, y); y += 10;
+
+    doc.setFontSize(12);
+    doc.text("Questions Review:", 10, y);
+    y += 8;
+
+    doc.setFontSize(10);
+
+    result.detailedReview.forEach((item, idx) => {
+        const qText = cleanText(item.questionText);
+        const userAns = cleanText(item.userAnswerText);
+        const correctAns = cleanText(item.correctAnswerText);
+        const status = normalizeStatus(item.status);
+
+        // Question
+        const linesQ = doc.splitTextToSize(`${idx + 1}. ${qText}`, 180);
+        if (y + linesQ.length * 5 > 280) { doc.addPage(); y = 10; }
+        black();
+        doc.text(linesQ, 10, y);
+        y += linesQ.length * 5 + 2;
+
+        // Your answer
+        const userLines = doc.splitTextToSize(`Your Answer: ${userAns}`, 180);
+        if (y + userLines.length * 5 > 280) { doc.addPage(); y = 10; }
+        black();
+        doc.text(userLines, 12, y);
+        y += userLines.length * 5;
+
+        // Correct answer
+        const correctLines = doc.splitTextToSize(`Correct Answer: ${correctAns}`, 180);
+        if (y + correctLines.length * 5 > 280) { doc.addPage(); y = 10; }
+        black();
+        doc.text(correctLines, 12, y);
+        y += correctLines.length * 5;
+
+        // Status (colored)
+        if (y + 10 > 280) { doc.addPage(); y = 10; }
+        setStatusColor(status);
+        doc.text(`Status: ${status}`, 12, y);
+        black();
+        y += 8;
+
+        // Divider
+        doc.setDrawColor(200);
+        doc.line(10, y - 4, 200, y - 4);
+        y += 3;
+    });
+
+    doc.save(`${cleanText(result.name)}_${cleanText(result.testSet)}_Report.pdf`);
+}
+
+
+    /***********************
+     * ✅ LOAD SAVED LOGO ON START
+     ***********************/
+    window.addEventListener("DOMContentLoaded", function () {
+      const savedLogo = localStorage.getItem("companyLogo");
+      if (savedLogo) document.getElementById("companyLogo").src = savedLogo;
+    });
+  </script>
+</body>
+</html>
