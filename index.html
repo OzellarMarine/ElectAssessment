@@ -347,7 +347,7 @@
     <div id="testSelectionScreen" class="test-selection-screen">
       <h2>Select Your Test</h2>
       <div class="test-sets">
-        <div class="test-set-card" onclick="selectTestSet(2)" id="testSet2">
+        <div class="test-set-card" onclick="selectTestSet(2)" id="testSet">
           <h3>📖 Test Set 2</h3>
           <p><strong>Mode:</strong> Complete question set</p>
           <p><strong>Duration:</strong> 20 minutes</p>
@@ -613,7 +613,7 @@
    ***********************/
   function selectTestSet() {
   selectedTestSet = 2;
-  document.getElementById("testSet2").classList.add("selected");
+  document.getElementById("testSet").classList.add("selected");
   document.getElementById("proceedBtn").disabled = false;
 }
 
